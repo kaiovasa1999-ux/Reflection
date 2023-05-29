@@ -1,8 +1,7 @@
-﻿namespace Comparator.Models
+﻿namespace Comparator.DTOs
 {
-    public class Offer
+    public class UpdatableOfferDTO
     {
-        public int Id { get; set; }
         public int ClinetId { get; set; }
 
         public int CreditSum { get; set; }
@@ -13,6 +12,6 @@
 
         public DateTime LDate { get; set; }
 
-        
+
     }
 }
