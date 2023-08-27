@@ -5,13 +5,13 @@ using System.Reflection;
 namespace Comparator.Services;
 public class PropsComperator
 {
-    public Offer UpdateViaReflection(Offer offer, UpdatableOfferDTO newParams)
+    public Offer UpdateViaReflection(Offer contactAMLDataNew, UpdatableOfferDTO DTOParams)
     {
-        Type DTOParams = newParams.GetType();
-        PropertyInfo[] DTOContactAMLDataProps = DTOParams.GetProperties();
+        Type DTOContactAMLData = DTOParams.GetType();
+        PropertyInfo[] DTOContactAMLDataProps = DTOContactAMLData.GetProperties();
 
-        Type offerForUpdate = offer.GetType();
-        PropertyInfo[] contactAMlDataForUpdateProps = offerForUpdate.GetProperties();
+        Type contactAMlDataForUpdate = contactAMLDataNew.GetType();
+        PropertyInfo[] contactAMlDataForUpdateProps = contactAMlDataForUpdate.GetProperties();
 
         foreach (var pDTO in DTOContactAMLDataProps)
         {
@@ -19,39 +19,39 @@ public class PropsComperator
             {
                 if (pDTO.Name == pAML.Name)
                 {
-                    PropertyInfo tempPropAML = contactAMlDataForUpdateProps.FirstOrDefault(p => p.Name == pAML.Name);
-                    PropertyInfo tempPropDTO = DTOContactAMLDataProps.FirstOrDefault(p => p.Name == pDTO.Name);
-                    Type tempPropTypeDTO = tempPropDTO.PropertyType;
+                    Type tempPropTypeDTO = pDTO.PropertyType;
 
-                    object defaultValue = GetDefaultValue(tempPropDTO.PropertyType);
-                    object propertyValue = tempPropDTO.GetValue(DTOParams);
+                    object defaultValue = GetDefaultValue(pDTO.PropertyType);
+                    object propertyValue = pDTO.GetValue(DTOParams);
 
                     if (defaultValue == null && propertyValue == null)
                     {
-                        continue;
-                    }
-
-                    bool hasDefaultValue = propertyValue.Equals(defaultValue);
-                    if (!hasDefaultValue)
-                    {
-                        if (tempPropTypeDTO.IsGenericType && tempPropTypeDTO.GetGenericTypeDefinition() == typeof(Nullable<>))
-                        {
-                            Type nullabulleDataType = Nullable.GetUnderlyingType(tempPropTypeDTO);
-                            tempPropAML.SetValue(offerForUpdate, Convert.ChangeType(propertyValue, nullabulleDataType));
-
-                            continue;
-                        }
-
-                        tempPropAML.SetValue(offerForUpdate, Convert.ChangeType(propertyValue, tempPropTypeDTO));
-                    }
-                    else
-                    {
                         break;
+                    }
+
+                    if (propertyValue != null)
+                    {
+                        bool hasDefaultValue = propertyValue.Equals(defaultValue);
+
+                        if (!hasDefaultValue)
+                        {
+                            if (tempPropTypeDTO.IsGenericType && tempPropTypeDTO.GetGenericTypeDefinition() == typeof(Nullable<>))
+                            {
+                                Type nullabulleDataType = Nullable.GetUnderlyingType(tempPropTypeDTO);
+                                pAML.SetValue(contactAMLDataNew, Convert.ChangeType(propertyValue, nullabulleDataType));
+
+                                break;
+                            }
+
+                            pAML.SetValue(contactAMLDataNew, Convert.ChangeType(propertyValue, tempPropTypeDTO));
+                            break;
+
+                        }
                     }
                 }
             }
         }
-        return offer;
+        return contactAMLDataNew;
     }
     public static object GetDefaultValue(Type type)
     {
